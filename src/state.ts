@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 class NodeMap {
   private lastKey = 0
-  private map = new Map<Key, Node>()
+  private map = new Map<Key, NodeValue>()
 
   insert(value: unknown): Key {
     if (value == null)
@@ -54,7 +52,7 @@ class NodeMap {
   }
 }
 
-type Node = ObjectNode | ArrayNode | PrimitiveNode
+type NodeValue = ObjectNode | ArrayNode | PrimitiveNode
 
 interface ObjectNode extends NodeBase {
   type: 'object'
