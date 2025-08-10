@@ -1,3 +1,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
+
+.text-block p:first-child {
+  margin-top: 0;
+}

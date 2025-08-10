@@ -4,34 +4,46 @@ const defaultContent: Content = {
   type: 'content',
   children: [
     {
-      type: 'text',
+      type: 'text-block',
       children: [
-        { type: 'paragraph', text: 'Welcome! This is a simple editor' },
         {
           type: 'paragraph',
-          text: 'An example of a multiple-choice exercise:',
+          content: { type: 'text', text: 'Welcome! This is a simple editor' },
+        },
+        {
+          type: 'paragraph',
+          content: {
+            type: 'text',
+            text: 'An example of a multiple-choice exercise:',
+          },
         },
       ],
     },
     {
       type: 'mutiple-choice-exercise',
       question: {
-        type: 'text',
+        type: 'text-block',
         children: [
-          { type: 'paragraph', text: 'What is React primarily used for?' },
+          {
+            type: 'paragraph',
+            content: {
+              type: 'text',
+              text: 'What is React primarily used for?',
+            },
+          },
         ],
       },
       answers: [
         {
-          text: { type: 'paragraph', text: 'Building user interfaces' },
+          text: { type: 'text', text: 'Building user interfaces' },
           isCorrect: true,
         },
         {
-          text: { type: 'paragraph', text: 'Managing databases' },
+          text: { type: 'text', text: 'Managing databases' },
           isCorrect: false,
         },
         {
-          text: { type: 'paragraph', text: 'Writing server-side code' },
+          text: { type: 'text', text: 'Writing server-side code' },
           isCorrect: false,
         },
       ],
@@ -42,11 +54,13 @@ const defaultContent: Content = {
 function render(element: Element, key?: React.Key) {
   switch (element.type) {
     case 'content':
-      return renderContent(element as Content, key)
+      return renderContent(element, key)
     case 'mutiple-choice-exercise':
-      return renderMultipleChoiceQuestion(element as MutipleChoiceExercise, key)
+      return renderMultipleChoiceQuestion(element, key)
+    case 'text-block':
+      return renderTextBlock(element, key)
     case 'text':
-      return renderText(element as Text, key)
+      return renderText(element, key)
     case 'paragraph':
       return renderParagraph(element as Paragraph, key)
     default:
@@ -62,18 +76,6 @@ function renderContent(content: Content, key?: React.Key) {
   )
 }
 
-function renderText(text: Text, key?: React.Key) {
-  return (
-    <div key={key}>
-      {text.children.map((p, idx) => renderParagraph(p, idx))}
-    </div>
-  )
-}
-
-function renderParagraph(paragraph: Paragraph, key?: React.Key) {
-  return <p key={key}>{paragraph.text}</p>
-}
-
 function renderMultipleChoiceQuestion(
   exercise: MutipleChoiceExercise,
   key?: React.Key,
@@ -82,11 +84,11 @@ function renderMultipleChoiceQuestion(
     <div key={key} className="card bg-info-content">
       <div className="card-body">
         <h2 className="card-title">Multiple Choice Question</h2>
-        <div>{renderText(exercise.question)}</div>
-        <ul className="list-none pl-0">
+        {renderTextBlock(exercise.question)}
+        <ul className="list-none pl-0 mt-0">
           {exercise.answers.map((answer, idx) => (
-            <li key={idx.toString()} className="flex items-center gap-4">
-              <input type="checkbox" className="checkbox" />
+            <li key={idx.toString()}>
+              <input type="checkbox" className="checkbox mr-4" />
               {render(answer.text, idx)}
             </li>
           ))}
@@ -94,6 +96,22 @@ function renderMultipleChoiceQuestion(
       </div>
     </div>
   )
+}
+
+function renderTextBlock(text: TextBlock, key?: React.Key) {
+  return (
+    <div key={key} className="text-block">
+      {text.children.map((p, idx) => renderParagraph(p, idx))}
+    </div>
+  )
+}
+
+function renderParagraph(paragraph: Paragraph, key?: React.Key) {
+  return <p key={key}>{render(paragraph.content)}</p>
+}
+
+function renderText(text: Text, key?: React.Key) {
+  return <span key={key}>{text.text}</span>
 }
 
 export default function App() {
@@ -105,30 +123,35 @@ export default function App() {
   )
 }
 
-type Element = Content | MutipleChoiceExercise | Text | Paragraph
+type Element = Content | MutipleChoiceExercise | TextBlock | Paragraph | Text
 
 interface Content {
   type: 'content'
-  children: (Text | MutipleChoiceExercise)[]
+  children: (TextBlock | MutipleChoiceExercise)[]
 }
 
 interface MutipleChoiceExercise {
   type: 'mutiple-choice-exercise'
-  question: Text
+  question: TextBlock
   answers: MultipleChoiceAnswer[]
 }
 
 interface MultipleChoiceAnswer {
-  text: Paragraph
+  text: Text
   isCorrect: boolean
 }
 
-interface Text {
-  type: 'text'
+interface TextBlock {
+  type: 'text-block'
   children: Paragraph[]
 }
 
 interface Paragraph {
   type: 'paragraph'
+  content: Text
+}
+
+interface Text {
+  type: 'text'
   text: string
 }
