@@ -8,3 +8,29 @@ export default function App() {
     </main>
   )
 }
+
+interface Content {
+  type: 'content'
+  children: (Text | MutipleChoiceExercise)[]
+}
+
+interface MutipleChoiceExercise {
+  type: 'mutiple-choice-exercise'
+  question: Text
+  answers: MultipleChoiceAnswer[]
+}
+
+interface MultipleChoiceAnswer {
+  text: Paragraph
+  isCorrect: boolean
+}
+
+interface Text {
+  type: 'content'
+  children: Paragraph[]
+}
+
+interface Paragraph {
+  type: 'paragraph'
+  text: string
+}
