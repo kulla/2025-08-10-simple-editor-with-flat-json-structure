@@ -6,10 +6,7 @@ const defaultContent: Content = {
     {
       type: 'content',
       children: [
-        {
-          type: 'paragraph',
-          text: 'Welcome! This is a short introduction to Rsbuild and React.',
-        },
+        { type: 'paragraph', text: 'Welcome! This is a simple editor' },
         {
           type: 'paragraph',
           text: 'An example of a multiple-choice exercise:',
