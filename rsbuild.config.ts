@@ -1,12 +1,12 @@
-import { defineConfig } from '@rsbuild/core'
-import { pluginReact } from '@rsbuild/plugin-react'
+import {defineConfig} from '@rsbuild/core'
+import {pluginReact} from '@rsbuild/plugin-react'
 
 export default defineConfig({
   html: {
-    title: 'Prototype',
+    title: 'Simple Editor with Flat JSON Structure',
   },
   output: {
-    assetPrefix: '/rsbuild-react-bun-biome-starter-template/',
+    assetPrefix: '/2025-08-10-simple-editor-with-flat-json-structure/',
   },
   plugins: [pluginReact()],
 })
