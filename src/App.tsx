@@ -98,7 +98,7 @@ export default function App() {
               .getEntries()
               .map(
                 ([key, entry]) =>
-                  `${padStart(key, 4)}: ${JSON.stringify(entry)}`,
+                  `${padStart(key, 4)}: ${JSON.stringify(entry.value)}`,
               )
               .join('\n')}
           </pre>
