@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './App.css'
 
 import { useStateStorage } from './state'
@@ -54,24 +55,51 @@ const defaultContent: Content = {
 }
 
 export default function App() {
+  const [showState, setShowState] = useState(true)
+  const [showEntries, setShowEntries] = useState(true)
   const { state, storage } = useStateStorage(defaultContent)
 
   return (
     <main className="prose p-10">
-      <h1>Editor:</h1>
-      {renderContent(defaultContent)}
-      <h2>State:</h2>
-      <pre className="bg-base-200 p-4 rounded-lg">
-        {JSON.stringify(state, null, 2)}
-      </pre>
-      <h2>Entries:</h2>
-      <ul className="list-none pl-0">
-        {storage.getEntries().map(([key, entry]) => (
-          <li key={key} className="mb-2">
-            <strong>{key}:</strong> {JSON.stringify(entry.value)}
-          </li>
-        ))}
-      </ul>
+      <div className="max-w-xl">
+        <h1>Editor:</h1>
+        {renderContent(defaultContent)}
+      </div>
+      <h2>Debug Panel:</h2>
+      <fieldset className="fieldset">
+        <legend className="fieldset-legend">Options</legend>
+        <label className="label">
+          <input
+            type="checkbox"
+            className="toggle"
+            checked={showState}
+            onChange={() => setShowState(!showState)}
+          />{' '}
+          External State
+        </label>
+        <label className="label">
+          <input
+            type="checkbox"
+            className="toggle"
+            checked={showEntries}
+            onChange={() => setShowEntries(!showEntries)}
+          />{' '}
+          Internal Storage Entries
+        </label>
+      </fieldset>
+      <div className="flex gap-4">
+        {showState && (
+          <pre className="max-w-xl h-132">{JSON.stringify(state, null, 2)}</pre>
+        )}
+        {showEntries && (
+          <pre className="max-w-xl h-132">
+            {storage
+              .getEntries()
+              .map(([key, entry]) => `${key}: ${JSON.stringify(entry)}`)
+              .join('\n')}
+          </pre>
+        )}
+      </div>
     </main>
   )
 }
