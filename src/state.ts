@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import isEqual from 'lodash/isEqual'
 import { useRef, useSyncExternalStore } from 'react'
 
 export function useStateStorage<State>(state: State) {
@@ -14,7 +14,7 @@ export function useStateStorage<State>(state: State) {
     () => {
       const result = { state: storage.getState(), storage }
 
-      if (R.equals(cachedResult.current.state, result.state)) {
+      if (isEqual(cachedResult.current.state, result.state)) {
         return cachedResult.current
       }
 

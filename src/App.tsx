@@ -1,3 +1,4 @@
+import padStart from 'lodash/padStart'
 import { useState } from 'react'
 import './App.css'
 
@@ -95,7 +96,10 @@ export default function App() {
           <pre className="max-w-xl h-132">
             {storage
               .getEntries()
-              .map(([key, entry]) => `${key}: ${JSON.stringify(entry)}`)
+              .map(
+                ([key, entry]) =>
+                  `${padStart(key, 4)}: ${JSON.stringify(entry)}`,
+              )
               .join('\n')}
           </pre>
         )}
