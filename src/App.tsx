@@ -67,12 +67,12 @@ const optionLabels: Record<Option, string> = {
 }
 
 export default function App() {
+  const { state, storage } = useStateStorage(defaultContent)
   const [options, showOptions] = useState<Record<Option, boolean>>({
     state: true,
     entries: true,
     html: true,
   })
-  const { state, storage } = useStateStorage(defaultContent)
 
   return (
     <main className="prose p-10">
@@ -101,31 +101,36 @@ export default function App() {
         ))}
       </fieldset>
       <div className="flex gap-4">
-        {options.state && (
-          <pre className="max-w-xl h-132">{JSON.stringify(state, null, 2)}</pre>
-        )}
-        {options.entries && (
-          <pre className="max-w-xl h-132">
-            {storage
-              .getEntries()
-              .map(
-                ([key, entry]) =>
-                  `${padStart(key, 4)}: ${JSON.stringify(entry.value)}`,
-              )
-              .join('\n')}
-          </pre>
-        )}
-        {options.html && (
-          <pre className="max-w-xl h-132">
-            {beautifyHtml(
-              ReactDOMServer.renderToStaticMarkup(renderContent(state)),
-              { indent_size: 2, wrap_line_length: 70 },
-            )}
-          </pre>
+        {optionTypes.map((optionType) =>
+          options[optionType] ? (
+            <pre className="max-w-xl h-132" key={optionType}>
+              {getDebugView(optionType as Option)}
+            </pre>
+          ) : null,
         )}
       </div>
     </main>
   )
+
+  function getDebugView(option: Option) {
+    switch (option) {
+      case 'state':
+        return JSON.stringify(state, null, 2)
+      case 'entries':
+        return storage
+          .getEntries()
+          .map(
+            ([key, entry]) =>
+              `${padStart(key, 4)}: ${JSON.stringify(entry.value)}`,
+          )
+          .join('\n')
+      case 'html':
+        return beautifyHtml(
+          ReactDOMServer.renderToStaticMarkup(renderContent(state)),
+          { indent_size: 2, wrap_line_length: 70 },
+        )
+    }
+  }
 }
 
 function render(element: Element, key?: React.Key) {
