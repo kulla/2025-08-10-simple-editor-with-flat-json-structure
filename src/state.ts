@@ -24,12 +24,13 @@ export function useStateStorage<State>(state: State) {
 }
 
 class StateStorage<State = unknown> {
-  private map = new FlatStorage()
+  private storage = new WritableStorage()
   private rootKey: Key
   private updateListeners: (() => void)[] = []
+  private depth = 0
 
   constructor(state: State) {
-    this.rootKey = this.map.insert(state)
+    this.rootKey = this.storage.insert(state)
   }
 
   addUpdateListener(listener: () => void): void {
@@ -40,18 +41,68 @@ class StateStorage<State = unknown> {
     this.updateListeners = this.updateListeners.filter((l) => l !== listener)
   }
 
+  update(updateFn: (map: WritableStorage) => void) {
+    this.depth++
+    updateFn(this.storage)
+    this.depth--
+
+    if (this.depth === 0) {
+      for (const listener of this.updateListeners) {
+        listener()
+      }
+    }
+  }
+
+  getStorage(): ReadonlyStorage {
+    return this.storage
+  }
+
   getState(): State {
-    return this.map.read(this.rootKey) as State
+    return this.storage.read(this.rootKey) as State
   }
 
   getEntries(): [Key, Entry][] {
-    return this.map.getEntries()
+    return this.storage.getEntries()
   }
 }
 
-class FlatStorage {
+class ReadonlyStorage {
+  protected map = new Map<Key, Entry>()
+
+  getEntry(key: Key) {
+    const entry = this.map.get(key)
+
+    if (entry === undefined) throw new Error(`Entry for key ${key} not found`)
+
+    return entry
+  }
+
+  getEntries(): [Key, Entry][] {
+    return Array.from(this.map.entries())
+  }
+
+  read(key: Key): unknown {
+    const entry = this.map.get(key)
+
+    if (!entry) {
+      throw new Error(`No entry found for key: ${key}`)
+    }
+
+    switch (entry.type) {
+      case 'object':
+        return Object.fromEntries(
+          Object.entries(entry.value).map(([k, vKey]) => [k, this.read(vKey)]),
+        )
+      case 'array':
+        return entry.value.map((vKey) => this.read(vKey))
+      case 'primitive':
+        return entry.value
+    }
+  }
+}
+
+class WritableStorage extends ReadonlyStorage {
   private lastKey = 0
-  private map = new Map<Key, Entry>()
 
   insert(value: unknown): Key {
     const key = this.generateKey()
@@ -84,27 +135,8 @@ class FlatStorage {
     return key
   }
 
-  read(key: Key): unknown {
-    const entry = this.map.get(key)
-
-    if (!entry) {
-      throw new Error(`No entry found for key: ${key}`)
-    }
-
-    switch (entry.type) {
-      case 'object':
-        return Object.fromEntries(
-          Object.entries(entry.value).map(([k, vKey]) => [k, this.read(vKey)]),
-        )
-      case 'array':
-        return entry.value.map((vKey) => this.read(vKey))
-      case 'primitive':
-        return entry.value
-    }
-  }
-
-  getEntries(): [Key, Entry][] {
-    return Array.from(this.map.entries())
+  update<E extends Entry>(key: Key, changeEntry: (e: E) => E) {
+    this.map.set(key, changeEntry(this.getEntry(key) as E))
   }
 
   private generateKey(): Key {
