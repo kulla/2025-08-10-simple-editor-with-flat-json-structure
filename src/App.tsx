@@ -55,9 +55,19 @@ const defaultContent: Content = {
   ],
 }
 
+const optionTypes = ['state', 'entries'] as const
+type Option = (typeof optionTypes)[number]
+
+const optionLabels: Record<Option, string> = {
+  state: 'External State',
+  entries: 'Internal Storage Entries',
+}
+
 export default function App() {
-  const [showState, setShowState] = useState(true)
-  const [showEntries, setShowEntries] = useState(true)
+  const [options, showOptions] = useState<Record<Option, boolean>>({
+    state: true,
+    entries: true,
+  })
   const { state, storage } = useStateStorage(defaultContent)
 
   return (
@@ -69,30 +79,28 @@ export default function App() {
       <h2>Debug Panel:</h2>
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Options</legend>
-        <label className="label">
-          <input
-            type="checkbox"
-            className="toggle"
-            checked={showState}
-            onChange={() => setShowState(!showState)}
-          />{' '}
-          External State
-        </label>
-        <label className="label">
-          <input
-            type="checkbox"
-            className="toggle"
-            checked={showEntries}
-            onChange={() => setShowEntries(!showEntries)}
-          />{' '}
-          Internal Storage Entries
-        </label>
+        {optionTypes.map((optionType) => (
+          <label key={optionType} className="label">
+            <input
+              type="checkbox"
+              className="toggle"
+              checked={options[optionType]}
+              onChange={() =>
+                showOptions((prev) => ({
+                  ...prev,
+                  [optionType]: !prev[optionType],
+                }))
+              }
+            />{' '}
+            {optionLabels[optionType]}
+          </label>
+        ))}
       </fieldset>
       <div className="flex gap-4">
-        {showState && (
+        {options.state && (
           <pre className="max-w-xl h-132">{JSON.stringify(state, null, 2)}</pre>
         )}
-        {showEntries && (
+        {options.entries && (
           <pre className="max-w-xl h-132">
             {storage
               .getEntries()
