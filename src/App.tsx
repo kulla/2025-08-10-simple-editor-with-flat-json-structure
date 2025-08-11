@@ -74,7 +74,7 @@ export default function App() {
     html: true,
   })
 
-  const state = storage.getRootValue().get()
+  const state = storage.getRootValue().read()
 
   return (
     <main className="prose p-10">

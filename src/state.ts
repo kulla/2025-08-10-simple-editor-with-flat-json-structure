@@ -21,7 +21,7 @@ abstract class StorageValue<V = unknown> {
     protected key: Key,
   ) {}
 
-  get(): V {
+  read(): V {
     return this.manager.getStorage().read(this.key) as V
   }
 }
