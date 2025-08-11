@@ -78,7 +78,7 @@ export default function App() {
     <main className="prose p-10">
       <div className="max-w-xl">
         <h1>Editor:</h1>
-        {renderContent(defaultContent)}
+        {renderContent(state)}
       </div>
       <h2>Debug Panel:</h2>
       <fieldset className="fieldset">
