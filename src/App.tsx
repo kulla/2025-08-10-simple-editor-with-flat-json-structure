@@ -1,5 +1,7 @@
 import './App.css'
 
+import { useStateStorage } from './state'
+
 const defaultContent: Content = {
   type: 'content',
   children: [
@@ -49,6 +51,29 @@ const defaultContent: Content = {
       ],
     },
   ],
+}
+
+export default function App() {
+  const { state, storage } = useStateStorage(defaultContent)
+
+  return (
+    <main className="prose p-10">
+      <h1>Editor:</h1>
+      {renderContent(defaultContent)}
+      <h2>State:</h2>
+      <pre className="bg-base-200 p-4 rounded-lg">
+        {JSON.stringify(state, null, 2)}
+      </pre>
+      <h2>Entries:</h2>
+      <ul className="list-none pl-0">
+        {storage.getEntries().map(([key, entry]) => (
+          <li key={key} className="mb-2">
+            <strong>{key}:</strong> {JSON.stringify(entry.value)}
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
 }
 
 function render(element: Element, key?: React.Key) {
@@ -112,15 +137,6 @@ function renderParagraph(paragraph: Paragraph, key?: React.Key) {
 
 function renderText(text: Text, key?: React.Key) {
   return <span key={key}>{text.text}</span>
-}
-
-export default function App() {
-  return (
-    <main className="prose p-10">
-      <h1>Editor:</h1>
-      {renderContent(defaultContent)}
-    </main>
-  )
 }
 
 type Element = Content | MutipleChoiceExercise | TextBlock | Paragraph | Text

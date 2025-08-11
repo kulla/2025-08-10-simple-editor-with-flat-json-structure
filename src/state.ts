@@ -1,10 +1,35 @@
-export class ValueStorage<Value = unknown> {
+import * as R from 'ramda'
+import { useRef, useSyncExternalStore } from 'react'
+
+export function useStateStorage<State>(state: State) {
+  const storage = useRef(new StateStorage<State>(state)).current
+  const cachedResult = useRef({ state, storage })
+
+  return useSyncExternalStore(
+    (callback) => {
+      storage.addUpdateListener(callback)
+
+      return () => storage.removeUpdateListener(callback)
+    },
+    () => {
+      const result = { state: storage.getState(), storage }
+
+      if (R.equals(cachedResult.current.state, result.state)) {
+        return cachedResult.current
+      }
+
+      return result
+    },
+  )
+}
+
+class StateStorage<State = unknown> {
   private map = new FlatStorage()
   private rootKey: Key
   private updateListeners: (() => void)[] = []
 
-  constructor(value: Value) {
-    this.rootKey = this.map.insert(value)
+  constructor(state: State) {
+    this.rootKey = this.map.insert(state)
   }
 
   addUpdateListener(listener: () => void): void {
@@ -15,25 +40,30 @@ export class ValueStorage<Value = unknown> {
     this.updateListeners = this.updateListeners.filter((l) => l !== listener)
   }
 
-  getValue(): Value {
-    return this.getValueByKey(this.rootKey)
+  getState(): State {
+    return this.map.read(this.rootKey) as State
+  }
+
+  getEntries(): [Key, Entry][] {
+    return this.map.getEntries()
   }
 }
 
 class FlatStorage {
-  private map = new EntryMap()
+  private lastKey = 0
+  private map = new Map<Key, Entry>()
 
-  insert<V>(value: V): Key<V> {
+  insert(value: unknown): Key {
+    const key = this.generateKey()
+
     if (value == null)
       throw new Error('`null` and `undefined` values are not allowed')
 
-    if (isArray(value)) {
+    if (Array.isArray(value)) {
       const children = value.map((item) => this.insert(item))
-      return this.map.addArray(children) as Key<V>
-    }
-
-    if (typeof value === 'object') {
-      const objectNode: ObjectEntry<V> = { type: 'object', key, value: {} }
+      this.map.set(key, { type: 'array', key, value: children })
+    } else if (typeof value === 'object') {
+      const objectNode: ObjectEntry = { type: 'object', key, value: {} }
 
       for (const [k, v] of Object.entries(value)) {
         const itemKey = this.insert(v)
@@ -41,104 +71,64 @@ class FlatStorage {
       }
 
       this.map.set(key, objectNode)
-
-      return key
+    } else if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      this.map.set(key, { type: 'primitive', key, value })
+    } else {
+      throw new Error(`Unsupported value type: ${typeof value}`)
     }
 
-    if (isPrimitive(value)) {
-      return this.map.addPrimitive(value)
-    }
-
-    throw new Error(`Unsupported value type: ${typeof value}`)
-  }
-}
-
-type A = Entry<unknown[]>
-
-class EntryMap {
-  private lastKey = 0
-  private map = new Map<string, unknown>()
-
-  get<V>(key: Key<V>): Entry<V> | undefined {
-    return this.map.get(key) as Entry<V> | undefined
-  }
-
-  addArray<V extends ArrayType>(value: EntryValue<V>): Key<V> {
-    const key = this.generateKey<V>()
-    this.map.set(key, { type: 'array', key, value })
     return key
   }
 
-  add<V>(value: EntryValue<V>): Key<V> {
-    if (isArray(value)) {
-      const key = this.generateKey<V>()
-      this.set(key, { type: 'array', key, value })
-      return key
+  read(key: Key): unknown {
+    const entry = this.map.get(key)
+
+    if (!entry) {
+      throw new Error(`No entry found for key: ${key}`)
     }
-    this.map.set(key, { type: 'primitive', key, value })
-    return key
+
+    switch (entry.type) {
+      case 'object':
+        return Object.fromEntries(
+          Object.entries(entry.value).map(([k, vKey]) => [k, this.read(vKey)]),
+        )
+      case 'array':
+        return entry.value.map((vKey) => this.read(vKey))
+      case 'primitive':
+        return entry.value
+    }
   }
 
-  private set<V>(key: Key<V>, entry: Entry<V>): void {
-    this.map.set(key, entry)
+  getEntries(): [Key, Entry][] {
+    return Array.from(this.map.entries())
   }
 
-  private generateKey<V>(): Key<V> {
-    return (this.lastKey++).toString() as Key<V>
+  private generateKey(): Key {
+    return (this.lastKey++).toString()
   }
 }
 
-function isObject(value: unknown): value is ObjectType {
-  return value !== null && typeof value === 'object' && !isArray(value)
-}
+type Entry = ObjectEntry | ArrayEntry | PrimitiveEntry
 
-function isArray(value: unknown): value is ArrayType {
-  return Array.isArray(value)
-}
-
-function isPrimitive(value: unknown): value is PrimitiveType {
-  return (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
-  )
-}
-
-type Entry<V> = V extends PrimitiveType
-  ? PrimitiveEntry<V>
-  : V extends Array<infer E>
-    ? ArrayEntry<E[]>
-    : V extends object
-      ? ObjectEntry<V>
-      : never
-
-interface ObjectEntry<V extends object> extends BaseEntry<V> {
+interface ObjectEntry extends BaseEntry<Record<string, Key>> {
   type: 'object'
 }
 
-interface ArrayEntry<V extends Array<unknown>> extends BaseEntry<V> {
+interface ArrayEntry extends BaseEntry<Key[]> {
   type: 'array'
 }
 
-interface PrimitiveEntry<V extends PrimitiveType> extends BaseEntry<V> {
+interface PrimitiveEntry extends BaseEntry<boolean | number | string> {
   type: 'primitive'
 }
 
 interface BaseEntry<V> {
-  key: Key<V>
-  value: EntryValue<V>
+  key: Key
+  value: V
 }
 
-type Key<V> = NewType<string, V>
-type EntryValue<V> = V extends PrimitiveType
-  ? V
-  : V extends ArrayType
-    ? Key<V[number]>[]
-    : V extends ObjectType
-      ? { [P in keyof V]: Key<V[P]> }
-      : never
-
-type ObjectType = object & { length?: never }
-type ArrayType = Array<unknown>
-type PrimitiveType = string | number | boolean
-type NewType<Base, Brand> = Base & { readonly __brand: Brand }
+type Key = string
