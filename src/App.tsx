@@ -67,12 +67,14 @@ const optionLabels: Record<Option, string> = {
 }
 
 export default function App() {
-  const { state, storage } = useStateStorage(defaultContent)
+  const storage = useStateStorage(defaultContent)
   const [options, showOptions] = useState<Record<Option, boolean>>({
     state: true,
     entries: true,
     html: true,
   })
+
+  const state = storage.getRootValue().get()
 
   return (
     <main className="prose p-10">

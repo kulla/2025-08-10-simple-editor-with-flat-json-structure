@@ -1,9 +1,8 @@
 import isEqual from 'lodash/isEqual'
 import { useRef, useSyncExternalStore } from 'react'
 
-export function useStateStorage<State>(state: State) {
-  const storage = useRef(new StateStorage<State>(state)).current
-  const cachedResult = useRef({ state, storage })
+export function useStateStorage<State extends object>(state: State) {
+  const storage = useRef(new StorageManager<State>(state)).current
 
   return useSyncExternalStore(
     (callback) => {
@@ -12,18 +11,25 @@ export function useStateStorage<State>(state: State) {
       return () => storage.removeUpdateListener(callback)
     },
     () => {
-      const result = { state: storage.getState(), storage }
-
-      if (isEqual(cachedResult.current.state, result.state)) {
-        return cachedResult.current
-      }
-
-      return result
+      return storage
     },
   )
 }
 
-class StateStorage<State = unknown> {
+abstract class StorageValue<V = unknown> {
+  constructor(
+    protected manager: StorageManager,
+    protected key: Key,
+  ) {}
+
+  get(): V {
+    return this.manager.getStorage().read(this.key) as V
+  }
+}
+
+class ObjectValue<ObjectType extends object> extends StorageValue<ObjectType> {}
+
+class StorageManager<State extends object = object> {
   private storage = new WritableStorage()
   private rootKey: Key
   private updateListeners: (() => void)[] = []
@@ -57,8 +63,8 @@ class StateStorage<State = unknown> {
     return this.storage
   }
 
-  getState(): State {
-    return this.storage.read(this.rootKey) as State
+  getRootValue() {
+    return new ObjectValue<State>(this, this.rootKey)
   }
 
   getEntries(): [Key, Entry][] {
