@@ -1,4 +1,3 @@
-import isEqual from 'lodash/isEqual'
 import { useRef, useSyncExternalStore } from 'react'
 
 export function useStateStorage<State extends object>(state: State) {
