@@ -1,5 +1,6 @@
 import padStart from 'lodash/padStart'
 import { useState } from 'react'
+import ReactDOMServer from 'react-dom/server'
 import './App.css'
 
 import { useStateStorage } from './state'
@@ -55,18 +56,20 @@ const defaultContent: Content = {
   ],
 }
 
-const optionTypes = ['state', 'entries'] as const
+const optionTypes = ['state', 'entries', 'html'] as const
 type Option = (typeof optionTypes)[number]
 
 const optionLabels: Record<Option, string> = {
   state: 'External State',
   entries: 'Internal Storage Entries',
+  html: 'HTML Output',
 }
 
 export default function App() {
   const [options, showOptions] = useState<Record<Option, boolean>>({
     state: true,
     entries: true,
+    html: true,
   })
   const { state, storage } = useStateStorage(defaultContent)
 
@@ -109,6 +112,11 @@ export default function App() {
                   `${padStart(key, 4)}: ${JSON.stringify(entry.value)}`,
               )
               .join('\n')}
+          </pre>
+        )}
+        {options.html && (
+          <pre className="max-w-xl h-132">
+            {ReactDOMServer.renderToStaticMarkup(renderContent(state))}
           </pre>
         )}
       </div>
