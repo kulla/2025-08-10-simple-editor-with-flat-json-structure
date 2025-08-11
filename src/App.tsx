@@ -1,6 +1,7 @@
 import padStart from 'lodash/padStart'
 import { useState } from 'react'
 import ReactDOMServer from 'react-dom/server'
+import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
 import { useStateStorage } from './state'
@@ -116,7 +117,10 @@ export default function App() {
         )}
         {options.html && (
           <pre className="max-w-xl h-132">
-            {ReactDOMServer.renderToStaticMarkup(renderContent(state))}
+            {beautifyHtml(
+              ReactDOMServer.renderToStaticMarkup(renderContent(state)),
+              { indent_size: 2, wrap_line_length: 70 },
+            )}
           </pre>
         )}
       </div>
