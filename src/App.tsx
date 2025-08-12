@@ -157,6 +157,9 @@ function render(element: StateValue<{ type: string }>) {
 function renderContent(content: StateValue<Content>) {
   return (
     <section
+      contentEditable
+      suppressContentEditableWarning
+      spellCheck={false}
       id="editor"
       key={content.getKey()}
       data-key={content.getKey()}
