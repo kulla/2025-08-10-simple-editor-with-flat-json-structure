@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server'
 import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
-import { StateValue, useStateStorage } from './state'
+import { type StateValue, useStateStorage } from './state'
 
 const defaultContent: Content = {
   type: 'content',
