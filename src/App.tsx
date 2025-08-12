@@ -67,7 +67,7 @@ const optionLabels: Record<Option, string> = {
 }
 
 export default function App() {
-  const storage = useStateStorage(defaultContent)
+  const { storage } = useStateStorage(defaultContent)
   const [options, showOptions] = useState<Record<Option, boolean>>({
     state: true,
     entries: true,

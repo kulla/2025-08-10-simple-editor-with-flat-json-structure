@@ -2,6 +2,7 @@ import { useRef, useSyncExternalStore } from 'react'
 
 export function useStateStorage<State extends ObjectType>(state: State) {
   const storage = useRef(new StorageManager<State>(state)).current
+  const lastResult = useRef({ storage, editCount: storage.getEditCount() })
 
   return useSyncExternalStore(
     (callback) => {
@@ -9,7 +10,17 @@ export function useStateStorage<State extends ObjectType>(state: State) {
 
       return () => storage.removeUpdateListener(callback)
     },
-    () => storage,
+    () => {
+      const result = { storage, editCount: storage.getEditCount() }
+
+      if (lastResult.current.editCount === result.editCount) {
+        return lastResult.current
+      }
+
+      lastResult.current = result
+
+      return result
+    },
   )
 }
 
@@ -117,6 +128,7 @@ class StorageManager<State extends object = object> {
   private rootKey: Key
   private updateListeners: (() => void)[] = []
   private depth = 0
+  private editCount = 0
 
   constructor(state: State) {
     this.rootKey = this.storage.insert(state)
@@ -134,6 +146,7 @@ class StorageManager<State extends object = object> {
     this.depth++
     updateFn(this.storage)
     this.depth--
+    this.editCount++
 
     if (this.depth === 0) {
       for (const listener of this.updateListeners) {
@@ -152,6 +165,10 @@ class StorageManager<State extends object = object> {
 
   getEntries(): [Key, Entry][] {
     return this.storage.getEntries()
+  }
+
+  getEditCount() {
+    return this.editCount
   }
 }
 
