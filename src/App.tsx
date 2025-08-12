@@ -157,6 +157,7 @@ function render(element: StateValue<{ type: string }>) {
 function renderContent(content: StateValue<Content>) {
   return (
     <section
+      id="editor"
       key={content.getKey()}
       data-key={content.getKey()}
       className="rounded-xl border-2 p-4"
@@ -202,12 +203,10 @@ function renderMultipleChoiceQuestion(
           className="btn btn-secondary btn-outline"
           type="button"
           onClick={() =>
-            exercise
-              .get('answers')
-              .insert({
-                isCorrect: false,
-                text: { type: 'text', text: 'New answer' },
-              })
+            exercise.get('answers').insert({
+              isCorrect: false,
+              text: { type: 'text', text: 'New answer' },
+            })
           }
         >
           Add Answer
