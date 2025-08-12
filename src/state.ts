@@ -100,7 +100,13 @@ abstract class PrimitiveValue<P extends PrimitiveType> extends StorageValue<P> {
 
 class StringValue extends PrimitiveValue<string> {}
 class NumberValue extends PrimitiveValue<number> {}
-class BooleanValue extends PrimitiveValue<boolean> {}
+class BooleanValue extends PrimitiveValue<boolean> {
+  toggle() {
+    this.manager.update((storage) => {
+      storage.update<BooleanEntry>(this.key, (prev) => !prev)
+    })
+  }
+}
 
 export type StateValue<V> = V extends boolean
   ? BooleanValue
@@ -243,8 +249,14 @@ class WritableStorage extends ReadonlyStorage {
     return key
   }
 
-  update<E extends Entry>(key: Key, changeEntry: (e: E) => E) {
-    this.map.set(key, changeEntry(this.getEntry(key) as E))
+  update<E extends Entry>(
+    key: Key,
+    changeEntryValue: (e: E['value']) => E['value'],
+  ) {
+    const oldEntry = this.getEntry(key) as E
+    const newEntry = { ...oldEntry, value: changeEntryValue(oldEntry.value) }
+
+    this.map.set(key, newEntry)
   }
 
   private generateKey(): Key {

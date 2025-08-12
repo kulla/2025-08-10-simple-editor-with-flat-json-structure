@@ -185,7 +185,7 @@ function renderMultipleChoiceQuestion(
                 type="checkbox"
                 className="checkbox mr-4"
                 checked={answer.get('isCorrect').getValue()}
-                onChange={() => {}}
+                onChange={() => answer.get('isCorrect').toggle()}
               />
               {render(answer.get('text'))}
             </li>
