@@ -215,8 +215,6 @@ function renderText(text: StateValue<Text>) {
   )
 }
 
-type Element = Content | MutipleChoiceExercise | TextBlock | Paragraph | Text
-
 interface Content {
   type: 'content'
   children: (TextBlock | MutipleChoiceExercise)[]
