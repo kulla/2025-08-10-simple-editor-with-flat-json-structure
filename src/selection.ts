@@ -32,8 +32,6 @@ function getKeys(node: Node | null): Key[] | null {
     currentNode = currentNode.parentNode
   }
 
-  console.log(result)
-
   return result.length > 0 ? result : null
 }
 
