@@ -98,6 +98,14 @@ class ArrayValue<A extends ArrayType> extends ContainerValue<A> {
       )
     })
   }
+
+  insert(value: A[number]) {
+    this.manager.update((storage) => {
+      const keyNewEntry = storage.insert(value)
+
+      storage.update<ArrayEntry>(this.key, (prev) => [...prev, keyNewEntry])
+    })
+  }
 }
 
 abstract class PrimitiveValue<P extends PrimitiveType> extends StorageValue<P> {

@@ -198,6 +198,20 @@ function renderMultipleChoiceQuestion(
             </li>
           ))}
         </ul>
+        <button
+          className="btn btn-secondary btn-outline"
+          type="button"
+          onClick={() =>
+            exercise
+              .get('answers')
+              .insert({
+                isCorrect: false,
+                text: { type: 'text', text: 'New answer' },
+              })
+          }
+        >
+          Add Answer
+        </button>
       </div>
     </div>
   )
