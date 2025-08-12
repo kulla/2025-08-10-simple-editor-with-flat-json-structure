@@ -307,4 +307,4 @@ interface BaseEntry<V> {
   value: V
 }
 
-type Key = string
+export type Key = string

@@ -1,10 +1,11 @@
 import padStart from 'lodash/padStart'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ReactDOMServer from 'react-dom/server'
 import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
 import { type StateValue, useStateStorage } from './state'
+import { Cursor, getCursor } from './selection'
 
 const defaultContent: Content = {
   type: 'content',
@@ -57,13 +58,14 @@ const defaultContent: Content = {
   ],
 }
 
-const optionTypes = ['state', 'entries', 'html'] as const
+const optionTypes = ['state', 'entries', 'html', 'cursor'] as const
 type Option = (typeof optionTypes)[number]
 
 const optionLabels: Record<Option, string> = {
   state: 'External State',
   entries: 'Internal Storage Entries',
   html: 'HTML Output',
+  cursor: 'Current cursor / selection',
 }
 
 const newTextBlock: TextBlock = {
@@ -92,13 +94,23 @@ const newMultipleChoiceExercise: MutipleChoiceExercise = {
 
 export default function App() {
   const { storage } = useStateStorage(defaultContent)
+  const [cursor, setCursor] = useState<Cursor | null>(null)
   const [options, showOptions] = useState<Record<Option, boolean>>({
     state: true,
-    entries: true,
+    entries: false,
     html: true,
+    cursor: true,
   })
 
   const state = storage.getRootValue()
+
+  useEffect(() => {
+    const handler = () => setCursor(getCursor(window.getSelection()))
+
+    document.addEventListener('selectionchange', handler)
+
+    return () => document.removeEventListener('selectionchange', handler)
+  })
 
   return (
     <main className="prose p-10">
@@ -173,6 +185,8 @@ export default function App() {
           ReactDOMServer.renderToStaticMarkup(renderContent(state)),
           { indent_size: 2, wrap_line_length: 70 },
         )
+      case 'cursor':
+        return JSON.stringify(cursor, undefined, 2)
     }
   }
 }
