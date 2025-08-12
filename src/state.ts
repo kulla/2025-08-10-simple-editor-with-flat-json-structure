@@ -90,6 +90,14 @@ class ArrayValue<A extends ArrayType> extends ContainerValue<A> {
 
     return entry.value.map((childKey) => this.createChildValue(childKey))
   }
+
+  delete(key: Key) {
+    this.manager.update((storage) => {
+      storage.update<ArrayEntry>(this.key, (prev) =>
+        prev.filter((x) => x !== key),
+      )
+    })
+  }
 }
 
 abstract class PrimitiveValue<P extends PrimitiveType> extends StorageValue<P> {

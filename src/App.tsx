@@ -188,6 +188,13 @@ function renderMultipleChoiceQuestion(
                 onChange={() => answer.get('isCorrect').toggle()}
               />
               {render(answer.get('text'))}
+              <button
+                className="btn btn-secondary btn-outline btn-sm ml-4"
+                type="button"
+                onClick={() => exercise.get('answers').delete(answer.getKey())}
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
