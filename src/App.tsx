@@ -76,6 +76,20 @@ const newTextBlock: TextBlock = {
   ],
 }
 
+const newMultipleChoiceExercise: MutipleChoiceExercise = {
+  type: 'mutiple-choice-exercise',
+  question: {
+    type: 'text-block',
+    children: [
+      { type: 'paragraph', content: { type: 'text', text: 'Question...' } },
+    ],
+  },
+  answers: [
+    { text: { type: 'text', text: 'Answer 1' }, isCorrect: true },
+    { text: { type: 'text', text: 'Answer 2' }, isCorrect: false },
+  ],
+}
+
 export default function App() {
   const { storage } = useStateStorage(defaultContent)
   const [options, showOptions] = useState<Record<Option, boolean>>({
@@ -98,7 +112,13 @@ export default function App() {
           >
             Add text
           </button>
-          <button className="btn btn-secondary btn-outline" type="button">
+          <button
+            className="btn btn-secondary btn-outline"
+            type="button"
+            onClick={() =>
+              state.get('children').insert(newMultipleChoiceExercise)
+            }
+          >
             Add multiple choice question
           </button>
         </div>
