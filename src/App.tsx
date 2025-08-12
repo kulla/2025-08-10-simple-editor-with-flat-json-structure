@@ -145,9 +145,9 @@ export default function App() {
             storage.update<StringEntry>(
               nodeKey,
               (prev) =>
-                prev.slice(0, cursor.anchor.offset) +
+                prev.slice(0, smallerOffset) +
                 event.key +
-                prev.slice(cursor.anchor.offset),
+                prev.slice(smallerOffset),
             )
           })
         }
