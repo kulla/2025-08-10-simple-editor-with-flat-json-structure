@@ -1,11 +1,16 @@
 import padStart from 'lodash/padStart'
-import { useEffect, useState } from 'react'
+import {
+  type KeyboardEventHandler,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 import ReactDOMServer from 'react-dom/server'
 import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
 import { type StateValue, useStateStorage } from './state'
-import { Cursor, getCursor } from './selection'
+import { type Cursor, getCursor } from './selection'
 
 const defaultContent: Content = {
   type: 'content',
@@ -104,6 +109,10 @@ export default function App() {
 
   const state = storage.getRootValue()
 
+  const handleKeyDown: KeyboardEventHandler = useCallback((event) => {
+    event.preventDefault()
+  }, [])
+
   useEffect(() => {
     const handler = () => setCursor(getCursor(window.getSelection()))
 
@@ -134,7 +143,15 @@ export default function App() {
             Add multiple choice question
           </button>
         </div>
-        {renderContent(state)}
+        <div
+          onKeyDown={handleKeyDown}
+          contentEditable
+          suppressContentEditableWarning
+          spellCheck={false}
+          className="rounded-xl border-2 p-4 outline-none"
+        >
+          {renderContent(state)}
+        </div>
       </div>
       <h2>Debug Panel:</h2>
       <fieldset className="fieldset">
@@ -212,15 +229,7 @@ function render(element: StateValue<{ type: string }>) {
 
 function renderContent(content: StateValue<Content>) {
   return (
-    <section
-      contentEditable
-      suppressContentEditableWarning
-      spellCheck={false}
-      id="editor"
-      key={content.getKey()}
-      data-key={content.getKey()}
-      className="rounded-xl border-2 p-4 outline-none"
-    >
+    <section key={content.getKey()} data-key={content.getKey()}>
       {content.get('children').map((child) => render(child))}
     </section>
   )
