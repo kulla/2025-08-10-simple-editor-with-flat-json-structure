@@ -116,6 +116,9 @@ export default function App() {
       if (event.key.startsWith('Arrow')) return
       if (event.ctrlKey && event.key === 'r') return
 
+      const { anchor, focus } = cursor
+      const smallerOffset = Math.min(anchor.offset, focus.offset)
+      const biggerOffset = Math.max(anchor.offset, focus.offset)
       const common = takeWhile(
         zip(cursor.anchor.keys, cursor.focus.keys),
         ([a, b]) => a === b,
@@ -130,18 +133,23 @@ export default function App() {
 
       if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
         if (nodeEntry.type === 'string') {
-          //delete selection
-          if (isCollapsed) {
-            storage.update((storage) => {
+          storage.update((storage) => {
+            if (smallerOffset < biggerOffset) {
               storage.update<StringEntry>(
                 nodeKey,
                 (prev) =>
-                  prev.slice(0, cursor.anchor.offset) +
-                  event.key +
-                  prev.slice(cursor.anchor.offset),
+                  prev.slice(0, smallerOffset) + prev.slice(biggerOffset),
               )
-            })
-          }
+            }
+
+            storage.update<StringEntry>(
+              nodeKey,
+              (prev) =>
+                prev.slice(0, cursor.anchor.offset) +
+                event.key +
+                prev.slice(cursor.anchor.offset),
+            )
+          })
         }
       }
 
