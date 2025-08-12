@@ -109,9 +109,16 @@ export default function App() {
 
   const state = storage.getRootValue()
 
-  const handleKeyDown: KeyboardEventHandler = useCallback((event) => {
-    event.preventDefault()
-  }, [])
+  const handleKeyDown: KeyboardEventHandler = useCallback(
+    (event) => {
+      if (cursor == null) return
+      if (event.key.startsWith('Arrow')) return
+      if (event.ctrlKey && event.key === 'r') return
+
+      event.preventDefault()
+    },
+    [cursor],
+  )
 
   useEffect(() => {
     const handler = () => setCursor(getCursor(window.getSelection()))
