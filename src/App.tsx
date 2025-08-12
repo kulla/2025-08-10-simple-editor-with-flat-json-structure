@@ -205,7 +205,7 @@ function renderContent(content: StateValue<Content>) {
       id="editor"
       key={content.getKey()}
       data-key={content.getKey()}
-      className="rounded-xl border-2 p-4"
+      className="rounded-xl border-2 p-4 outline-none"
     >
       {content.get('children').map((child) => render(child))}
     </section>
