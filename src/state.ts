@@ -9,9 +9,7 @@ export function useStateStorage<State extends object>(state: State) {
 
       return () => storage.removeUpdateListener(callback)
     },
-    () => {
-      return storage
-    },
+    () => storage,
   )
 }
 
