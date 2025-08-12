@@ -66,6 +66,16 @@ const optionLabels: Record<Option, string> = {
   html: 'HTML Output',
 }
 
+const newTextBlock: TextBlock = {
+  type: 'text-block',
+  children: [
+    {
+      type: 'paragraph',
+      content: { type: 'text', text: 'New text block' },
+    },
+  ],
+}
+
 export default function App() {
   const { storage } = useStateStorage(defaultContent)
   const [options, showOptions] = useState<Record<Option, boolean>>({
@@ -80,6 +90,18 @@ export default function App() {
     <main className="prose p-10">
       <div className="max-w-xl">
         <h1>Editor:</h1>
+        <div className="mb-4 flex gap-2">
+          <button
+            className="btn btn-secondary btn-outline"
+            type="button"
+            onClick={() => state.get('children').insert(newTextBlock)}
+          >
+            Add text
+          </button>
+          <button className="btn btn-secondary btn-outline" type="button">
+            Add multiple choice question
+          </button>
+        </div>
         {renderContent(state)}
       </div>
       <h2>Debug Panel:</h2>
