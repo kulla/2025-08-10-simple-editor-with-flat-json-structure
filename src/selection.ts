@@ -1,3 +1,4 @@
+import { reverse } from 'lodash'
 import type { Key } from './state'
 
 export function getCursor(selection: Selection | null): Cursor | null {
@@ -32,7 +33,7 @@ function getKeys(node: Node | null): Key[] | null {
     currentNode = currentNode.parentNode
   }
 
-  return result.length > 0 ? result : null
+  return result.length > 0 ? reverse(result) : null
 }
 
 export interface Cursor {

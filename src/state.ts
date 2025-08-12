@@ -286,7 +286,7 @@ interface ObjectEntry extends BaseEntry<Record<string, Key>> {
   type: 'object'
 }
 
-interface ArrayEntry extends BaseEntry<Key[]> {
+export interface ArrayEntry extends BaseEntry<Key[]> {
   type: 'array'
 }
 
@@ -298,7 +298,7 @@ interface NumberEntry extends BaseEntry<number> {
   type: 'number'
 }
 
-interface StringEntry extends BaseEntry<string> {
+export interface StringEntry extends BaseEntry<string> {
   type: 'string'
 }
 

@@ -1,5 +1,6 @@
-import padStart from 'lodash/padStart'
+import { padStart, zip, takeWhile, first, isEqual, last } from 'lodash'
 import {
+  Key,
   type KeyboardEventHandler,
   useCallback,
   useEffect,
@@ -9,7 +10,7 @@ import ReactDOMServer from 'react-dom/server'
 import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
-import { type StateValue, useStateStorage } from './state'
+import { type StateValue, StringEntry, useStateStorage } from './state'
 import { type Cursor, getCursor } from './selection'
 
 const defaultContent: Content = {
@@ -115,9 +116,38 @@ export default function App() {
       if (event.key.startsWith('Arrow')) return
       if (event.ctrlKey && event.key === 'r') return
 
+      const common = takeWhile(
+        zip(cursor.anchor.keys, cursor.focus.keys),
+        ([a, b]) => a === b,
+      ).map(first) as Key[]
+      const isCollapsed = isEqual(cursor.anchor, cursor.focus)
+
+      const nodeKey = last(common) as string | undefined
+
+      if (nodeKey === undefined) return
+
+      const nodeEntry = storage.getStorage().getEntry(nodeKey)
+
+      if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
+        if (nodeEntry.type === 'string') {
+          //delete selection
+          if (isCollapsed) {
+            storage.update((storage) => {
+              storage.update<StringEntry>(
+                nodeKey,
+                (prev) =>
+                  prev.slice(0, cursor.anchor.offset) +
+                  event.key +
+                  prev.slice(cursor.anchor.offset),
+              )
+            })
+          }
+        }
+      }
+
       event.preventDefault()
     },
-    [cursor],
+    [cursor, storage],
   )
 
   useEffect(() => {
@@ -308,9 +338,13 @@ function renderParagraph(paragraph: StateValue<Paragraph>) {
 }
 
 function renderText(text: StateValue<Text>) {
+  const textContent = text.get('text')
+
   return (
     <span key={text.getKey()} data-key={text.getKey()}>
-      {text.get('text').getValue()}
+      <span key={textContent.getKey()} data-key={textContent.getKey()}>
+        {textContent.getValue()}
+      </span>
     </span>
   )
 }
