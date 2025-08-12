@@ -1,6 +1,6 @@
 import { useRef, useSyncExternalStore } from 'react'
 
-export function useStateStorage<State extends object>(state: State) {
+export function useStateStorage<State extends ObjectType>(state: State) {
   const storage = useRef(new StorageManager<State>(state)).current
 
   return useSyncExternalStore(
@@ -47,10 +47,8 @@ abstract class ContainerValue<V> extends StorageValue<V> {
   }
 }
 
-class ObjectValue<
-  ObjectType extends object,
-> extends ContainerValue<ObjectType> {
-  get<P extends keyof ObjectType>(name: P): StateValue<ObjectType[P]> {
+class ObjectValue<O extends ObjectType> extends ContainerValue<O> {
+  get<P extends keyof O>(name: P): StateValue<O[P]> {
     const entry = this.manager.getStorage().getEntry(this.key)
 
     if (entry.type !== 'object') {
@@ -67,7 +65,7 @@ class ObjectValue<
   }
 }
 
-class ArrayValue<A extends ArrayType> extends ContainerValue<ArrayType> {
+class ArrayValue<A extends ArrayType> extends ContainerValue<A> {
   map<B>(callback: (value: StateValue<A[number]>, index: number) => B): B[] {
     return this.getValues().map((value, index) => callback(value, index))
   }
