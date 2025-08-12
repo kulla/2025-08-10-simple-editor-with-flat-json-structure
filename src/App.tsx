@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server'
 import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
-import { useStateStorage } from './state'
+import { StateValue, useStateStorage } from './state'
 
 const defaultContent: Content = {
   type: 'content',
@@ -74,7 +74,7 @@ export default function App() {
     html: true,
   })
 
-  const state = storage.getRootValue().read()
+  const state = storage.getRootValue()
 
   return (
     <main className="prose p-10">
@@ -117,7 +117,7 @@ export default function App() {
   function getDebugView(option: Option) {
     switch (option) {
       case 'state':
-        return JSON.stringify(state, null, 2)
+        return JSON.stringify(state.read(), null, 2)
       case 'entries':
         return storage
           .getEntries()
@@ -135,45 +135,54 @@ export default function App() {
   }
 }
 
-function render(element: Element, key?: React.Key) {
-  switch (element.type) {
+function render(element: StateValue<{ type: string }>) {
+  switch (element.get('type').getValue()) {
     case 'content':
-      return renderContent(element, key)
+      return renderContent(element as StateValue<Content>)
     case 'mutiple-choice-exercise':
-      return renderMultipleChoiceQuestion(element, key)
+      return renderMultipleChoiceQuestion(
+        element as StateValue<MutipleChoiceExercise>,
+      )
     case 'text-block':
-      return renderTextBlock(element, key)
+      return renderTextBlock(element as StateValue<TextBlock>)
     case 'text':
-      return renderText(element, key)
+      return renderText(element as StateValue<Text>)
     case 'paragraph':
-      return renderParagraph(element as Paragraph, key)
+      return renderParagraph(element as StateValue<Paragraph>)
     default:
       return null
   }
 }
 
-function renderContent(content: Content, key?: React.Key) {
+function renderContent(content: StateValue<Content>) {
   return (
-    <section key={key} className="rounded-xl border-2 p-4">
-      {content.children.map((child, idx) => render(child, idx))}
+    <section
+      key={content.getKey()}
+      data-key={content.getKey()}
+      className="rounded-xl border-2 p-4"
+    >
+      {content.get('children').map((child) => render(child))}
     </section>
   )
 }
 
 function renderMultipleChoiceQuestion(
-  exercise: MutipleChoiceExercise,
-  key?: React.Key,
+  exercise: StateValue<MutipleChoiceExercise>,
 ) {
   return (
-    <div key={key} className="card bg-info-content">
+    <div
+      key={exercise.getKey()}
+      data-key={exercise.getKey()}
+      className="card bg-info-content"
+    >
       <div className="card-body">
         <h2 className="card-title">Multiple Choice Question</h2>
-        {renderTextBlock(exercise.question)}
+        {renderTextBlock(exercise.get('question'))}
         <ul className="list-none pl-0 mt-0">
-          {exercise.answers.map((answer, idx) => (
-            <li key={idx.toString()}>
+          {exercise.get('answers').map((answer) => (
+            <li key={answer.getKey()}>
               <input type="checkbox" className="checkbox mr-4" />
-              {render(answer.text, idx)}
+              {render(answer.get('text'))}
             </li>
           ))}
         </ul>
@@ -182,20 +191,28 @@ function renderMultipleChoiceQuestion(
   )
 }
 
-function renderTextBlock(text: TextBlock, key?: React.Key) {
+function renderTextBlock(text: StateValue<TextBlock>) {
   return (
-    <div key={key} className="text-block">
-      {text.children.map((p, idx) => renderParagraph(p, idx))}
+    <div key={text.getKey()} data-key={text.getKey()} className="text-block">
+      {text.get('children').map(renderParagraph)}
     </div>
   )
 }
 
-function renderParagraph(paragraph: Paragraph, key?: React.Key) {
-  return <p key={key}>{render(paragraph.content)}</p>
+function renderParagraph(paragraph: StateValue<Paragraph>) {
+  return (
+    <p key={paragraph.getKey()} data-key={paragraph.getKey()}>
+      {renderText(paragraph.get('content'))}
+    </p>
+  )
 }
 
-function renderText(text: Text, key?: React.Key) {
-  return <span key={key}>{text.text}</span>
+function renderText(text: StateValue<Text>) {
+  return (
+    <span key={text.getKey()} data-key={text.getKey()}>
+      {text.get('text').getValue()}
+    </span>
+  )
 }
 
 type Element = Content | MutipleChoiceExercise | TextBlock | Paragraph | Text
