@@ -181,7 +181,12 @@ function renderMultipleChoiceQuestion(
         <ul className="list-none pl-0 mt-0">
           {exercise.get('answers').map((answer) => (
             <li key={answer.getKey()}>
-              <input type="checkbox" className="checkbox mr-4" />
+              <input
+                type="checkbox"
+                className="checkbox mr-4"
+                checked={answer.get('isCorrect').getValue()}
+                onChange={() => {}}
+              />
               {render(answer.get('text'))}
             </li>
           ))}
