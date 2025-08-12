@@ -219,7 +219,7 @@ function renderMultipleChoiceQuestion(
     <div
       key={exercise.getKey()}
       data-key={exercise.getKey()}
-      className="card bg-info-content"
+      className="card bg-info-content mb-4"
     >
       <div className="card-body">
         <h2 className="card-title">Multiple Choice Question</h2>
