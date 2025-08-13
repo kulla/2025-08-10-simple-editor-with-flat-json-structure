@@ -4,6 +4,7 @@ import {
   type KeyboardEventHandler,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useState,
 } from 'react'
 import ReactDOMServer from 'react-dom/server'
@@ -11,7 +12,7 @@ import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
 import { type StateValue, StringEntry, useStateStorage } from './state'
-import { type Cursor, getCursor } from './selection'
+import { type Cursor, getCursor, updateSelection } from './selection'
 
 const defaultContent: Content = {
   type: 'content',
@@ -123,7 +124,6 @@ export default function App() {
         zip(cursor.anchor.keys, cursor.focus.keys),
         ([a, b]) => a === b,
       ).map(first) as Key[]
-      const isCollapsed = isEqual(cursor.anchor, cursor.focus)
 
       const nodeKey = last(common) as string | undefined
 
@@ -150,6 +150,11 @@ export default function App() {
                 prev.slice(smallerOffset),
             )
           })
+
+          setCursor({
+            anchor: { ...anchor, offset: smallerOffset + 1 },
+            focus: { ...focus, offset: smallerOffset + 1 },
+          })
         }
       }
 
@@ -165,6 +170,10 @@ export default function App() {
 
     return () => document.removeEventListener('selectionchange', handler)
   })
+
+  useLayoutEffect(() => {
+    updateSelection(cursor)
+  }, [cursor])
 
   return (
     <main className="prose p-10">
