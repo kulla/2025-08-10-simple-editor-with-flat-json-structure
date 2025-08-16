@@ -197,7 +197,7 @@ export default function App() {
             Add multiple choice question
           </button>
         </div>
-        <div
+        <article
           onKeyDown={handleKeyDown}
           contentEditable
           suppressContentEditableWarning
@@ -205,7 +205,7 @@ export default function App() {
           className="rounded-xl border-2 p-4 outline-none"
         >
           {renderContent(state)}
-        </div>
+        </article>
       </div>
       <h2>Debug Panel:</h2>
       <fieldset className="fieldset">
