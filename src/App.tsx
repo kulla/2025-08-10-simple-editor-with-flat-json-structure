@@ -1,6 +1,7 @@
-import { padStart, zip, takeWhile, first, isEqual, last } from 'lodash'
+import { html as beautifyHtml } from 'js-beautify'
+import { first, isEqual, last, padStart, takeWhile, zip } from 'lodash'
 import {
-  Key,
+  type Key,
   type KeyboardEventHandler,
   useCallback,
   useEffect,
@@ -8,11 +9,10 @@ import {
   useState,
 } from 'react'
 import ReactDOMServer from 'react-dom/server'
-import { html as beautifyHtml } from 'js-beautify'
 import './App.css'
 
-import { type StateValue, StringEntry, useStateStorage } from './state'
 import { type Cursor, getCursor, updateSelection } from './selection'
+import { type StateValue, type StringEntry, useStateStorage } from './state'
 
 const defaultContent: Content = {
   type: 'content',

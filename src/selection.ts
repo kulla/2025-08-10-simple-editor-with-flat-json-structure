@@ -1,4 +1,4 @@
-import { reverse, isEqual, last } from 'lodash'
+import { isEqual, last, reverse } from 'lodash'
 import type { Key } from './state'
 
 export function updateSelection(cursor: Cursor | null) {
