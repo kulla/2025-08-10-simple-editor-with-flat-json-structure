@@ -28,7 +28,7 @@
     "@types/lodash": "^4.17.20",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "daisyui": "^5.0.50",
+    "daisyui": "^5.1.26",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2"
   }
