@@ -1,5 +1,5 @@
 import { html as beautifyHtml } from 'js-beautify'
-import { first, isEqual, last, padStart, takeWhile, zip } from 'lodash'
+import { first, last, padStart, takeWhile, zip } from 'lodash'
 import {
   type Key,
   type KeyboardEventHandler,
